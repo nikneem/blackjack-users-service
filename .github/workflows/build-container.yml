@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 env:
-  IMAGE_NAME: pollstar-users-api
+  IMAGE_NAME: blackjack-users-functions
 
 jobs:
   versionize:
@@ -42,27 +42,27 @@ jobs:
       - name: Test
         run: dotnet test ./src --no-build --nologo
 
-  # build:
-  #   runs-on: ubuntu-latest
-  #   needs: versionize
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: Build container images
-  #       working-directory: src
-  #       run: |
-  #         docker build . --file Dockerfile --tag ${{ secrets.ACR_LOGIN_SERVER }}/$IMAGE_NAME:${{needs.versionize.outputs.semver}}
-  #         docker build . --file Dockerfile --tag ${{ secrets.ACR_LOGIN_SERVER }}/$IMAGE_NAME:latest
-  #     - name: Login to ACR
-  #       uses: azure/docker-login@v1
-  #       with:
-  #         login-server: ${{ secrets.ACR_LOGIN_SERVER }}
-  #         username: ${{ secrets.ACR_USERNAME }}
-  #         password: ${{ secrets.ACR_PASSWORD }}
-  #     - name: Push container images
-  #       working-directory: src
-  #       run: |
-  #         docker push ${{ secrets.ACR_LOGIN_SERVER }}/$IMAGE_NAME:${{needs.versionize.outputs.semver}}
-  #         docker push ${{ secrets.ACR_LOGIN_SERVER }}/$IMAGE_NAME:latest
+  build:
+    runs-on: ubuntu-latest
+    needs: versionize
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build container images
+        working-directory: src
+        run: |
+          docker build . --file Dockerfile --tag ${{ secrets.ACR_LOGIN_SERVER }}/$IMAGE_NAME:${{needs.versionize.outputs.semver}}
+          docker build . --file Dockerfile --tag ${{ secrets.ACR_LOGIN_SERVER }}/$IMAGE_NAME:latest
+      - name: Login to ACR
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+      - name: Push container images
+        working-directory: src
+        run: |
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/$IMAGE_NAME:${{needs.versionize.outputs.semver}}
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/$IMAGE_NAME:latest
 
   publish-bicep:
     runs-on: ubuntu-latest

@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "BlackJack.Users.Functions": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7127"
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "httpPort": 34236,
+      "useSSL": false
+    }
+  }
+}
