@@ -7,7 +7,7 @@ var host = new HostBuilder()
     .ConfigureAppConfiguration(c =>
     {
         c.AddEnvironmentVariables();
-        var identity = new AzureCliCredential();
+        var identity = new DefaultAzureCredential();
         var azureAppConfigurationUrl = Environment.GetEnvironmentVariable("AppConfigEndpoint");
         if (!string.IsNullOrWhiteSpace(azureAppConfigurationUrl))
         {

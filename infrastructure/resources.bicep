@@ -60,6 +60,29 @@ resource storageAccountTable 'Microsoft.Storage/storageAccounts/tableServices/ta
   parent: storageAccountTableService
 }]
 
+var environmentVariables = [
+  {
+    name: 'Azure__StorageAccount'
+    value: storageAccount.name
+  }
+  {
+    name: 'AzureAppConfiguration'
+    value: appConfiguration.properties.endpoint
+  }
+  {
+    name: 'AzureWebJobsStorage'
+    value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
+  }
+  {
+    name: 'StorageAccountName'
+    value: storageAccount.name
+  }
+  {
+    name: 'FUNCTIONS_WORKER_RUNTIME'
+    value: 'dotnet-isolated'
+  }
+]
+
 module azureContainerApp 'br/CoreModules:containerapp:0.1.8' = {
   name: 'ContainerAppModule'
   dependsOn: [
@@ -77,15 +100,6 @@ module azureContainerApp 'br/CoreModules:containerapp:0.1.8' = {
     enableHttpTrafficBasedScaling: true
     enableIngress: true
     userAssignedIdentityId: containerAppIdentity.id
-    environmentVariables: [
-      {
-        name: 'Azure__StorageAccount'
-        value: storageAccount.name
-      }
-      {
-        name: 'AzureAppConfiguration'
-        value: appConfiguration.properties.endpoint
-      }
-    ]
+    environmentVariables: environmentVariables
   }
 }
