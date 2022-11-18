@@ -81,17 +81,42 @@ var environmentVariables = [
     name: 'FUNCTIONS_WORKER_RUNTIME'
     value: 'dotnet-isolated'
   }
+  {
+    name: 'UserAssignedIdentityClientId'
+    value: containerAppIdentity.properties.clientId
+  }
 ]
 
-module azureContainerApp 'br/CoreModules:containerapp:0.1.8' = {
+// module azureContainerApp 'br/CoreModules:containerapp:0.1.9' = {
+//   name: 'ContainerAppModule'
+//   dependsOn: [
+//     roleAssignmentsModule
+//   ]
+//   params: {
+//     containerAppName: '${defaultResourceName}-aca'
+//     containerAppEnvironmentResourceGroupName: integrationResourceGroupName
+//     containerAppEnvironmentResourceName: containerAppEnvironmentResourceName
+//     containerName: containerName
+//     containerRegistryName: containerRegistryResourceName
+//     containerVersion: containerVersion
+//     enableDapr: true
+//     daprPort: containerPort
+//     enableHttpTrafficBasedScaling: true
+//     enableIngress: true
+//     userAssignedIdentityId: containerAppIdentity.id
+//     environmentVariables: environmentVariables
+//   }
+// }
+module azureContainerApp 'containerapp.bicep' = {
   name: 'ContainerAppModule'
   dependsOn: [
     roleAssignmentsModule
   ]
   params: {
+    containerAppName: '${defaultResourceName}-aca'
+    location: location
     containerAppEnvironmentResourceGroupName: integrationResourceGroupName
     containerAppEnvironmentResourceName: containerAppEnvironmentResourceName
-    containerAppName: containerName
     containerName: containerName
     containerRegistryName: containerRegistryResourceName
     containerVersion: containerVersion
