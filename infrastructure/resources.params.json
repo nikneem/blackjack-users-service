@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "defaultResourceName": { "value": "blckjck-user-prod-neu" },
+    "location": { "value": "northeurope" },
+    "storageAccountTables": { "value": ["users"] },
+    "containerVersion": { "value": "0.1.3" },
+    "integrationResourceGroupName": { "value": "blckjck-int-prod-neu" },
+    "containerAppEnvironmentResourceName": {
+      "value": "blckjck-int-prod-neu-env"
+    },
+    "azureAppConfigurationName": { "value": "blckjck-int-prod-neu-cfg" }
+  }
+}

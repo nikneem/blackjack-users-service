@@ -1,0 +1,13 @@
+{
+  "moduleAliases": {
+    "br": {
+      "ArmBicepRegistry": {
+        "registry": "armbicep.azurecr.io"
+      },
+      "CoreModules": {
+        "registry": "armbicep.azurecr.io",
+        "modulePath": "bicep/modules/core"
+      }
+    }
+  }
+}

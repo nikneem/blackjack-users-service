@@ -2,22 +2,45 @@ param defaultResourceName string
 param location string
 param storageAccountTables array
 param containerVersion string
-param environmentName string
 param integrationResourceGroupName string
 param containerAppEnvironmentResourceName string
 param azureAppConfigurationName string
-param developersGroup string
+
+param containerRegistryResourceGroupName string = 'Containers'
+param containerRegistryResourceName string = 'ekereg.azurecr.io'
 
 param containerPort int = 7127
-param containerName string = 'pollstar-users-api'
+param containerName string = 'blackjack-users-functions'
 
-resource containerAppEnvironments 'Microsoft.App/managedEnvironments@2022-03-01' existing = {
-  name: containerAppEnvironmentResourceName
-  scope: resourceGroup(integrationResourceGroupName)
-}
 resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2022-05-01' existing = {
   name: azureAppConfigurationName
   scope: resourceGroup(integrationResourceGroupName)
+}
+
+resource containerAppIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' = {
+  name: defaultResourceName
+  location: location
+}
+
+module roleAssignmentsModule 'all-role-assignments.bicep' = {
+  name: 'roleAssignmentsModule'
+  params: {
+    containerAppPrincipalId: containerAppIdentity.properties.principalId
+    integrationResourceGroupName: integrationResourceGroupName
+  }
+}
+
+resource acrPullRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+  scope: resourceGroup()
+  name: '7f951dda-4ed3-4680-a7ca-43fe172d538d'
+}
+module acrPullRoleAssignment 'roleAssignment.bicep' = {
+  name: 'storageAccountDataReaderRoleAssignmentModule'
+  scope: resourceGroup(containerRegistryResourceGroupName)
+  params: {
+    principalId: containerAppIdentity.properties.principalId
+    roleDefinitionId: acrPullRole.id
+  }
 }
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
@@ -37,80 +60,32 @@ resource storageAccountTable 'Microsoft.Storage/storageAccounts/tableServices/ta
   parent: storageAccountTableService
 }]
 
-resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
-  name: '${defaultResourceName}-aca'
-  location: location
-  identity: {
-    type: 'SystemAssigned'
-  }
-  properties: {
-    managedEnvironmentId: containerAppEnvironments.id
-
-    configuration: {
-      activeRevisionsMode: 'Single'
-      ingress: {
-        external: false
-        targetPort: containerPort
-        transport: 'auto'
-        allowInsecure: false
-        traffic: [
-          {
-            weight: 100
-            latestRevision: true
-          }
-        ]
+module azureContainerApp 'br/CoreModules:containerapp:0.1.8' = {
+  name: 'ContainerAppModule'
+  dependsOn: [
+    roleAssignmentsModule
+  ]
+  params: {
+    containerAppEnvironmentResourceGroupName: integrationResourceGroupName
+    containerAppEnvironmentResourceName: containerAppEnvironmentResourceName
+    containerAppName: containerName
+    containerName: containerName
+    containerRegistryName: containerRegistryResourceName
+    containerVersion: containerVersion
+    enableDapr: true
+    daprPort: containerPort
+    enableHttpTrafficBasedScaling: true
+    enableIngress: true
+    userAssignedIdentityId: containerAppIdentity.id
+    environmentVariables: [
+      {
+        name: 'Azure__StorageAccount'
+        value: storageAccount.name
       }
-      dapr: {
-        enabled: true
-        appPort: containerPort
-        appId: containerName
+      {
+        name: 'AzureAppConfiguration'
+        value: appConfiguration.properties.endpoint
       }
-    }
-    template: {
-      containers: [
-        {
-          image: 'pollstarint${environmentName}neuacr.azurecr.io/${containerName}:${containerVersion}'
-          name: containerName
-          resources: {
-            cpu: json('0.25')
-            memory: '0.5Gi'
-          }
-          env: [
-            {
-              name: 'Azure__StorageAccount'
-              value: storageAccount.name
-            }
-            {
-              name: 'AzureAppConfiguration'
-              value: appConfiguration.properties.endpoint
-            }
-          ]
-
-        }
-      ]
-      scale: {
-        minReplicas: 1
-        maxReplicas: 6
-        rules: [
-          {
-            name: 'http-rule'
-            http: {
-              metadata: {
-                concurrentRequests: '30'
-              }
-            }
-          }
-        ]
-      }
-    }
+    ]
   }
 }
-
-// module roleAssignmentsModule 'all-role-assignments.bicep' = {
-//   name: 'roleAssignmentsModule'
-//   params: {
-//     containerAppPrincipalId: apiContainerApp.identity.principalId
-//     developersGroup: developersGroup
-//     integrationResourceGroupName: integrationResourceGroupName
-//   }
-// }
