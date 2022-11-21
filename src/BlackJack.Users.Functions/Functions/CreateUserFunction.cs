@@ -18,7 +18,9 @@ namespace BlackJack.Users.Functions.Functions
         public CreateUserFunction(ILoggerFactory loggerFactory)
         {
             var storageAccountName = Environment.GetEnvironmentVariable("StorageAccountName");
-            var credential = new ChainedTokenCredential(new ManagedIdentityCredential(), new EnvironmentCredential(),
+            var credential = new ChainedTokenCredential(
+                new ManagedIdentityCredential(), 
+                new EnvironmentCredential(),
                 new AzureCliCredential());
             _logger = loggerFactory.CreateLogger<CreateUserFunction>();
             if (storageAccountName != null)

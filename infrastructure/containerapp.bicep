@@ -38,7 +38,7 @@ var httpScaling = enableHttpTrafficBasedScaling ? [
 ] : []
 
 var ingress = enableIngress ? {
-  external: false
+  external: true
   targetPort: ingressTargetPort
   transport: 'auto'
   allowInsecure: false
