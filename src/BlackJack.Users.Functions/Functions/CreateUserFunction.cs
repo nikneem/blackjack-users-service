@@ -32,9 +32,9 @@ namespace BlackJack.Users.Functions.Functions
             }
         }
 
-        [Function("Users")]
+        [Function("CreateUser")]
         public async Task<HttpResponseData> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")]
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "users")]
             HttpRequestData req
         )
         {

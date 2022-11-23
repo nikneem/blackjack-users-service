@@ -65,7 +65,7 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
   name: containerAppName
   location: location
   identity: {
-    type: 'UserAssigned'
+    type: 'SystemAssigned,UserAssigned'
     userAssignedIdentities: {
       '${userAssignedIdentityId}': {}
     }
@@ -101,3 +101,5 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
     }
   }
 }
+
+output principalId string = apiContainerApp.identity.principalId

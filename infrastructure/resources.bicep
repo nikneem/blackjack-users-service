@@ -22,20 +22,12 @@ resource containerAppIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@
   location: location
 }
 
-module roleAssignmentsModule 'all-role-assignments.bicep' = {
-  name: 'roleAssignmentsModule'
-  params: {
-    containerAppPrincipalId: containerAppIdentity.properties.principalId
-    integrationResourceGroupName: integrationResourceGroupName
-  }
-}
-
 resource acrPullRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
   scope: resourceGroup()
   name: '7f951dda-4ed3-4680-a7ca-43fe172d538d'
 }
 module acrPullRoleAssignment 'roleAssignment.bicep' = {
-  name: 'storageAccountDataReaderRoleAssignmentModule'
+  name: 'acrPullRoleAssignment'
   scope: resourceGroup(containerRegistryResourceGroupName)
   params: {
     principalId: containerAppIdentity.properties.principalId
@@ -62,10 +54,6 @@ resource storageAccountTable 'Microsoft.Storage/storageAccounts/tableServices/ta
 
 var environmentVariables = [
   {
-    name: 'Azure__StorageAccount'
-    value: storageAccount.name
-  }
-  {
     name: 'AzureAppConfiguration'
     value: appConfiguration.properties.endpoint
   }
@@ -75,15 +63,11 @@ var environmentVariables = [
   }
   {
     name: 'StorageAccountName'
-    value: storageAccount.name
+    value: 'https://${storageAccount.name}.table.${environment().suffixes.storage}'
   }
   {
     name: 'FUNCTIONS_WORKER_RUNTIME'
     value: 'dotnet-isolated'
-  }
-  {
-    name: 'UserAssignedIdentityClientId'
-    value: containerAppIdentity.properties.clientId
   }
 ]
 
@@ -107,10 +91,10 @@ var environmentVariables = [
 //     environmentVariables: environmentVariables
 //   }
 // }
-module azureContainerApp 'containerapp.bicep' = {
-  name: 'ContainerAppModule'
+module containerAppModuleModule 'containerapp.bicep' = {
+  name: 'ContainerAppModuleModule'
   dependsOn: [
-    roleAssignmentsModule
+    acrPullRoleAssignment
   ]
   params: {
     containerAppName: '${defaultResourceName}-aca'
@@ -126,5 +110,13 @@ module azureContainerApp 'containerapp.bicep' = {
     enableIngress: true
     userAssignedIdentityId: containerAppIdentity.id
     environmentVariables: environmentVariables
+  }
+}
+
+module roleAssignmentsModule 'all-role-assignments.bicep' = {
+  name: 'roleAssignmentsModule'
+  params: {
+    containerAppPrincipalId: containerAppModuleModule.outputs.principalId
+    integrationResourceGroupName: integrationResourceGroupName
   }
 }
