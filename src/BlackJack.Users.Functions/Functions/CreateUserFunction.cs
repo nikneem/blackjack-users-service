@@ -68,14 +68,20 @@ namespace BlackJack.Users.Functions.Functions
                     TranslationKey = "Users.FailedToCreateUser",
                     ErrorMessage = ex.Message
                 };
-                await errorResponse.WriteStringAsync(JsonSerializer.Serialize(errorMessage));
+                await errorResponse.WriteStringAsync(JsonSerializer.Serialize(errorMessage, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                }));
                 return errorResponse;
             }
 
 
             var response = req.CreateResponse(HttpStatusCode.OK);
             response.Headers.Add("Content-Type", "application/json; charset=utf-8");
-            await response.WriteStringAsync(JsonSerializer.Serialize(dto));
+            await response.WriteStringAsync(JsonSerializer.Serialize(dto, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            }));
             return response;
 
         }
