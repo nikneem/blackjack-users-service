@@ -1,12 +1,15 @@
 using System.Net;
 using System.Text.Json;
+using Azure.Core.Serialization;
 using Azure.Data.Tables;
 using Azure.Identity;
 using BlackJack.Users.Functions.DataTransferObjects;
 using BlackJack.Users.Functions.Entities;
+using BlackJack.Users.Functions.Serialization;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace BlackJack.Users.Functions.Functions
 {
@@ -68,20 +71,14 @@ namespace BlackJack.Users.Functions.Functions
                     TranslationKey = "Users.FailedToCreateUser",
                     ErrorMessage = ex.Message
                 };
-                await errorResponse.WriteStringAsync(JsonSerializer.Serialize(errorMessage, new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                }));
+                await errorResponse.WriteStringAsync(errorMessage.Serialize());
                 return errorResponse;
             }
-
+            
 
             var response = req.CreateResponse(HttpStatusCode.OK);
             response.Headers.Add("Content-Type", "application/json; charset=utf-8");
-            await response.WriteStringAsync(JsonSerializer.Serialize(dto, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            }));
+            await response.WriteStringAsync(dto.Serialize());
             return response;
 
         }

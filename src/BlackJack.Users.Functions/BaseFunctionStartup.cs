@@ -1,8 +1,12 @@
-﻿using Azure.Identity;
+﻿using System.Text.Json;
+using Azure.Core.Serialization;
+using Azure.Identity;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace BlackJack.Users.Functions;
 
@@ -31,29 +35,7 @@ public abstract class BaseFunctionStartup<T>
     {
         
     }
-    private void ConfigureFunctionsWorker(HostBuilderContext context, IFunctionsWorkerApplicationBuilder builder)
-    {
-        //builder.UseNewtonsoftJson(new JsonSerializerSettings
-        //{
-        //    ContractResolver = new DefaultContractResolver
-        //    {
-        //        NamingStrategy = new CamelCaseNamingStrategy()
-        //    },
-        //    NullValueHandling = NullValueHandling.Ignore
-        //});
-        builder.UseDefaultWorkerMiddleware();
 
-    }
-
-    private void ConfigureOptions(WorkerOptions options)
-    {
-    }
-
-    /// <summary>
-    /// Builds out the default configuraiton from the appsettings files
-    /// </summary>
-    /// <param name="context">The <see cref="HostBuilderContext"/></param>
-    /// <param name="configBuilder">The <see cref="IConfigurationBuilder"/> to use to chain configurations into</param>
     private static void BuildAppConfiguration(HostBuilderContext context, IConfigurationBuilder configBuilder)
     {
         var azureAppConfigurationUrl = Environment.GetEnvironmentVariable("AppConfigEndpoint");
@@ -80,6 +62,37 @@ public abstract class BaseFunctionStartup<T>
                 throw new Exception("Failed to configure service using Azure App Configuration service", ex);
             }
         }
+
+    }
+
+    private void ConfigureFunctionsWorker(HostBuilderContext context, IFunctionsWorkerApplicationBuilder builder)
+    {
+        //builder.UseNewtonsoftJson(new JsonSerializerSettings
+        //{
+        //    ContractResolver = new DefaultContractResolver
+        //    {
+        //        NamingStrategy = new CamelCaseNamingStrategy()
+        //    },
+        //    NullValueHandling = NullValueHandling.Ignore
+        //});
+        
+        builder.UseDefaultWorkerMiddleware();
+
+    }
+
+    private void ConfigureOptions(WorkerOptions options)
+    {
+
+        options.Serializer = new NewtonsoftJsonObjectSerializer(
+            new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new CamelCaseNamingStrategy()
+                },
+                NullValueHandling = NullValueHandling.Ignore
+            });
+
 
     }
 
