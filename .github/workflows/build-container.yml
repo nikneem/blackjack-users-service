@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 env:
-  IMAGE_NAME: blackjack-users-functions
+  IMAGE_NAME: blackjack-users-api
 
 jobs:
   versionize:
