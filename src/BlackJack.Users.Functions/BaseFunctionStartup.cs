@@ -77,7 +77,6 @@ public abstract class BaseFunctionStartup<T>
         //});
         
         builder.UseDefaultWorkerMiddleware();
-        builder.
 
     }
 
