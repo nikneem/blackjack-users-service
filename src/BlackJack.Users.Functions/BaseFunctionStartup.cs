@@ -67,6 +67,15 @@ public abstract class BaseFunctionStartup<T>
 
     private void ConfigureFunctionsWorker(HostBuilderContext context, IFunctionsWorkerApplicationBuilder builder)
     {
+        //builder.UseNewtonsoftJson(new JsonSerializerSettings
+        //{
+        //    ContractResolver = new DefaultContractResolver
+        //    {
+        //        NamingStrategy = new CamelCaseNamingStrategy()
+        //    },
+        //    NullValueHandling = NullValueHandling.Ignore
+        //});
+        
         builder.UseDefaultWorkerMiddleware();
 
     }
@@ -83,6 +92,8 @@ public abstract class BaseFunctionStartup<T>
                 },
                 NullValueHandling = NullValueHandling.Ignore
             });
+
+
     }
 
     /// <summary>
