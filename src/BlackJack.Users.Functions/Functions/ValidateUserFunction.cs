@@ -2,7 +2,9 @@ using System.Net;
 using Azure;
 using Azure.Data.Tables;
 using Azure.Identity;
+using BlackJack.Users.Functions.DataTransferObjects;
 using BlackJack.Users.Functions.Entities;
+using BlackJack.Users.Functions.Serialization;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -45,7 +47,13 @@ namespace BlackJack.Users.Functions.Functions
                     var userEntity = await _tableClient.GetEntityAsync<UserTableEntity>("user", userId.ToString());
                     if (userEntity != null)
                     {
-                        return req.CreateResponse(HttpStatusCode.OK);
+                        var dto = new UserDto
+                        {
+                            UserId = userId
+                        };
+                        var response  = req.CreateResponse(HttpStatusCode.OK);
+                        await response.WriteStringAsync(dto.Serialize());
+                        return response;
                     }
                 }
                 catch (RequestFailedException rfex)
