@@ -43,21 +43,21 @@ namespace BlackJack.Users.Functions.Functions
         {
             var dto = new UserDto
             {
-                Id = Guid.NewGuid()
+                UserId = Guid.NewGuid()
             };
-            _logger.LogInformation("Generated unique GUID for user {userId}", dto.Id);
+            _logger.LogInformation("Generated unique GUID for user {userId}", dto.UserId);
 
             try
             {
-                _logger.LogInformation("Storing User ID {userId} in Table Storage", dto.Id);
+                _logger.LogInformation("Storing User ID {userId} in Table Storage", dto.UserId);
                 var entity = new UserTableEntity
                 {
                     PartitionKey = "user",
-                    RowKey = dto.Id.ToString(),
+                    RowKey = dto.UserId.ToString(),
                     Timestamp = DateTimeOffset.UtcNow
                 };
                 await _tableClient.AddEntityAsync(entity);
-                _logger.LogInformation("Storing User ID {userId} in Table Storage...OK", dto.Id);
+                _logger.LogInformation("Storing User ID {userId} in Table Storage...OK", dto.UserId);
             }
             catch (Exception ex)
             {
